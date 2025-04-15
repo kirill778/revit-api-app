@@ -5,6 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Security;
+using System.Web.Http;
+using System.Web.Http.Cors;
+using Microsoft.Owin.Hosting;
+using Owin;
 using Ascon.Pilot.DataClasses;
 using Ascon.Pilot.Server.Api;
 
@@ -15,21 +19,17 @@ namespace ChangesListener
         static void Main(string[] args)
         {
             System.AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
-            var server = args[0];
-            var login = args[1];
-            var password = args[2];
-            var secureString = new SecureString();
 
-            foreach (var c in password.ToCharArray())
-                secureString.AppendChar(c);
-
-            var credentials = ConnectionCredentials.GetConnectionCredentials(server, login, secureString);
-            var client = new Client();
-            var rules = new List<DRule>(); // Пустой список правил, так как они не используются
-
-            client.StartListen(credentials, rules);
-
-            Console.ReadLine();
+            // Настройка базового URL
+            string baseAddress = "http://localhost:5000/";
+            
+            // Запускаем веб-сервер OWIN
+            using (WebApp.Start<Startup>(url: baseAddress))
+            {
+                Console.WriteLine($"API сервер запущен по адресу {baseAddress}");
+                Console.WriteLine("Нажмите Enter для выхода");
+                Console.ReadLine();
+            }
         }
 
         static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
@@ -38,6 +38,33 @@ namespace ChangesListener
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
             Environment.Exit(1);
+        }
+    }
+
+    // Класс конфигурации OWIN
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            // Настройка WebAPI
+            HttpConfiguration config = new HttpConfiguration();
+            
+            // Настройка маршрутов
+            config.MapHttpAttributeRoutes();
+            config.Routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
+            
+            // Включение CORS
+            var corsAttr = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(corsAttr);
+            
+            // Использование WebAPI в приложении OWIN
+            app.UseWebApi(config);
+            
+            Console.WriteLine("API маршруты настроены");
         }
     }
 }
