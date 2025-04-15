@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [server, setServer] = useState('localhost:5545');
+  const [server, setServer] = useState('https://sigmakrym.ru:45661/sigma-bim');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function LoginForm() {
             value={server}
             onChange={(e) => setServer(e.target.value)}
             className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="localhost:5545"
+            placeholder="https://sigmakrym.ru:45661/sigma-bim"
           />
         </div>
         
